@@ -5,22 +5,44 @@
 <head>
   <link rel="stylesheet" type="text/css" href="/app/css/styles.css">
   <script type="text/javascript" src="/app/require/jquery-3.0.0.min.js"></script>
+  <script type="text/javascript" src="/zones/mobs.json"></script>
   <script type="text/javascript" src="/app/js/main.js"></script>
 </head>
 
 <body>
   <div id="mainbutton">
-    <p id="mps">$0.0/second</p>
-    <button id="clickbutton" onclick="inc()">Click me!</button>
     <p id="money">Balance: $0</p>
+    <button id="clickbutton" onclick="inc()">Drain<br>Accounts</button>
+    <p id="mps">$0.0/second</p>
+    <p id="clickearns">Click earns: $1</p>
+    <button class="displayupgs" id="clickdisplayupgs" onclick="displayUpgs(-1)">
+          Open Upgrades
+        </button>
+        <div class="upglist" id="clickupglist">
+          <div class="upgrade" id="clickupg1">
+            <button class="upgradebutton" id="clickupg1button" onclick="clickUpg(0)">
+              Flexible Fingers
+            </button>
+            <div class="buttonstats" id="clickupg1stats">
+              Costs: $210 <br>
+              Multiplier: x3.0
+            </div>
+          </div> <br>
+          <div class="upgrade" id="clickupg2">
+            <button class="upgradebutton" id="clickupg2button" onclick="clickUpg(1)">
+              More Clicks!
+            </button>
+            <div class="buttonstats" id="clickupg2stats">
+              Costs: $70000 <br>
+              Multiplier: x10.0
+            </div>
+          </div>
+        </div>
   </div>
   <div id="otheritems">
     <div id="topbar">
       <button id="buildbutton" onclick="toggleDisplay('build')" type="button">
         Buildings
-      </button>
-      <button id="upgbutton" onclick="toggleDisplay('upg')" type="button">
-        Upgrades
       </button>
       <button id="statsbutton" onclick="toggleDisplay('stats')">
         Stats
@@ -28,50 +50,169 @@
     </div>
     <div id="items">
       <div id="buildings">
-        <button id="acbuild" onclick="buildingFunc(0)" onmouseover="hoverFuncBuild(0)" onmouseout="hoverRemove()">
-          Auto-Clicker ($8)
-        </button> <br>
-        <button id="mpbuild" onclick="buildingFunc(1)" onmouseover="hoverFuncBuild(1)" onmouseout="hoverRemove()">
-          Money Printer ($120)
-        </button> <br>
-        <button id="ccbuild" onclick="buildingFunc(2)" onmouseover="hoverFuncBuild(2)" onmouseout="hoverRemove()">
-          Counterfeit Company ($1337)
-        </button> <br>
-        <button id="scbuild" onclick="buildingFunc(3)" onmouseover="hoverFuncBuild(3)" onmouseout="hoverRemove()">
-          Sharemarket Crash ($20160)
+        <button id="multiplier" onclick="multiplierChange()">x1</button> <br>
+        <button class="building" id="acbuild" onclick="buildingFunc(0)">
+          Auto-Clicker<br>($8)
         </button>
-      </div>
-      <div id="upgrades">
-        <button id="acupg1" onclick="upgradeFunc(0, 0)" onmouseover="hoverFuncUpg(0, 0)" onmouseout="hoverRemove()">
-          Clicking Factories ($1000)
-        </button> <br>
-        <button id="clickupg1" onclick="clickUpg(0)" onmouseover="hoverFuncUpg(-1, 0)" onmouseout="hoverRemove()">
-          Flexible Fingers ($2100)
-        </button> <br>
-        <button id="mpupg1" onclick="upgradeFunc(1, 0)" onmouseover="hoverFuncUpg(1, 0)" onmouseout="hoverRemove()">
-          Skilled Fake Money Making ($5000)
-        </button> <br>
-        <button id="ccupg1" onclick="upgradeFunc(2, 0)" onmouseover="hoverFuncUpg(2, 0)" onmouseout="hoverRemove()">
-          Printing Templates ($16900)
-        </button> <br>
-        <button id="acupg2" onclick="upgradeFunc(0, 1)" onmouseover="hoverFuncUpg(0, 1)" onmouseout="hoverRemove()">
-          Iron-Clad Mice ($42000)
-        </button> <br>
-        <button id="scupg1" onclick="upgradeFunc(3, 0)" onmouseover="hoverFuncUpg(3, 0)" onmouseout="hoverRemove()">
-          Fire on Wall Street ($150000)
-        </button> <br>
-        <button id="mpupg2" onclick="upgradeFunc(1, 1)" onmouseover="hoverFuncUpg(1, 1)" onmouseout="hoverRemove()">
-          Efficient Ink Cartridges ($150000)
+        <div class="buttonstats" id="acstats">
+          Amount: 0 <br>
+          Earns $0.0/second <br>
+          Total Spent: $0.0
+        </div> <br>
+        <button class="displayupgs" id="acdisplayupgs" onclick="displayUpgs(0)">
+          Open Upgrades
         </button>
+        <div class="upglist" id="acupglist">
+          <div class="upgrade" id="acupg1">
+            <button class="upgradebutton" id="acupg1button" onclick="upgradeFunc(0, 0)">
+              Clicking Factories
+            </button>
+            <div class="buttonstats" id="acupg1stats">
+              Costs: $100 <br>
+              Multiplier: x1.5
+            </div>
+          </div> <br>
+          <div class="upgrade" id="acupg2">
+            <button class="upgradebutton" id="acupg2button" onclick="upgradeFunc(0, 1)">
+              Iron-Clad Mice
+            </button>
+            <div class="buttonstats" id="acupg2stats">
+              Costs: $4200 <br>
+              Multiplier: x2.5
+            </div>
+          </div>
+        </div> <br>
+        <button class="building" id="mpbuild" onclick="buildingFunc(1)">
+          Money Printer<br>($120)
+        </button>
+        <div class="buttonstats" id="mpstats">
+          Amount: 0 <br>
+          Earns $0.0/second <br>
+          Total Spent: $0.0
+        </div> <br>
+        <button class="displayupgs" id="mpdisplayupgs" onclick="displayUpgs(1)">
+          Open Upgrades
+        </button>
+        <div class="upglist" id="mpupglist">
+          <div class="upgrade" id="mpupg1">
+            <button class="upgradebutton" id="mpupg1button" onclick="upgradeFunc(1, 0)">
+              Printing Templates
+            </button>
+            <div class="buttonstats" id="mpupg1stats">
+              Costs: $500 <br>
+              Multiplier: x2.0
+            </div>
+          </div> <br>
+          <div class="upgrade" id="mpupg2">
+            <button class="upgradebutton" id="mpupg2button" onclick="upgradeFunc(1, 1)">
+              Efficient Ink Cartridges
+            </button>
+            <div class="buttonstats" id="mpupg2stats">
+              Costs: $15000 <br>
+              Multiplier: x3.0
+            </div>
+          </div>
+        </div> <br>
+        <button class="building" id="ccbuild" onclick="buildingFunc(2)">
+          Counterfeit Company<br>($1337)
+        </button>
+        <div class="buttonstats" id="ccstats">
+          Amount: 0 <br>
+          Earns $0.0/second <br>
+          Total Spent: $0.0
+        </div> <br>
+        <button class="displayupgs" id="ccdisplayupgs" onclick="displayUpgs(2)">
+          Open Upgrades
+        </button>
+        <div class="upglist" id="ccupglist">
+          <div class="upgrade" id="ccupg1">
+            <button class="upgradebutton" id="ccupg1button" onclick="upgradeFunc(2, 0)">
+              Skilled Fake Money Making
+            </button>
+            <div class="buttonstats" id="ccupg1stats">
+              Costs: $1690 <br>
+              Multiplier: x2.0
+            </div>
+          </div> <br>
+          <div class="upgrade" id="ccupg2">
+            <button class="upgradebutton" id="ccupg2button" onclick="upgradeFunc(2, 1)">
+              Efficient Ink Cartridges
+            </button>
+            <div class="buttonstats" id="ccupg2stats">
+              Costs: $40000 <br>
+              Multiplier: x4.0
+            </div>
+          </div>
+        </div> <br>
+        <button class="building" id="scbuild" onclick="buildingFunc(3)">
+          Sharemarket Crash<br>($20160)
+        </button>
+        <div class="buttonstats" id="scstats">
+          Amount: 0 <br>
+          Earns $0.0/second <br>
+          Total Spent: $0.0
+        </div> <br>
+        <button class="displayupgs" id="scdisplayupgs" onclick="displayUpgs(3)">
+          Open Upgrades
+        </button>
+        <div class="upglist" id="scupglist">
+          <div class="upgrade" id="scupg1">
+            <button class="upgradebutton" id="scupg1button" onclick="upgradeFunc(3, 0)">
+              Fire on Wall Street
+            </button>
+            <div class="buttonstats" id="scupg1stats">
+              Costs: $50000 <br>
+              Multiplier: x3.0
+            </div>
+          </div>
+        </div> <br>
+        <button class="building" id="bhbuild" onclick="buildingFunc(4)">
+          Bank Heist<br>($123456)
+        </button>
+        <div class="buttonstats" id="bhstats">
+          Amount: 0 <br>
+          Earns $0.0/second <br>
+          Total Spent: $0.0
+        </div> <br>
+        <button class="displayupgs" id="bhdisplayupgs" onclick="displayUpgs(4)">
+          Open Upgrades
+        </button>
+        <div class="upglist" id="bhupglist">
+          <div class="upgrade" id="bhupg1">
+            <button class="upgradebutton" id="bhupg1button" onclick="upgradeFunc(4, 0)">
+              Lockpicks
+            </button>
+            <div class="buttonstats" id="bhupg1stats">
+              Costs: $500000 <br>
+              Multiplier: x3.5
+            </div>
+          </div>
+        </div> <br>
       </div>
       <div id="stats">
         <p id="clicks">Total Clicks: 0</p>
+        <p id="earned">Total Money Earned: $0.0</p>
       </div>
     </div>
-    <div id="hover">
-      <p id="hoverinfo">Hover over something!</p>
+    <div id="user">
+      <p id="clicklevel">Clicking: Level 1</p>
+      <div class="progressbarout" id="clickprogress">
+        <div class="progressbarin" id="clickbar">
+          <div class="progressbartext" id="clickxpamount">0%</div>
+        </div>
+      </div>
+      <p id="idlelevel">Idling: Level 1</p>
+      <div class="progressbarout" id="idleprogress">
+        <div class="progressbarin" id="idlebar">
+          <div class="progressbartext" id="idlexpamount">0%</div>
+        </div>
+      </div>
+      <p id="userinfo">Hover over something!</p>
     </div>
   </div>
+  <script type="text/javascript">
+      $(".progressbarout").width(($("#user").width() - 10) + "px")
+  </script>
 </body>
 
 </html>
