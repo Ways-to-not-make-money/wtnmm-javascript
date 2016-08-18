@@ -44,6 +44,12 @@ clickxp = [0.0, 100.0]
 idlelevel = 1
 idlexp = [0.0, 300.0]
 
+clicklevelmult = 0.0
+clickcritchance = 0.9
+clickcrit = 3
+buildcrit = 0.999
+idlelevelmult = 0.0
+
 round = (n, sigfigs) ->
   return parseFloat n.toFixed sigfigs
 
@@ -58,15 +64,51 @@ convertCosts = (n) ->
     return (n / 10 ** (6 + ((check - 1) * 3))).toFixed(1) +
            " " + moneynameacr[check]
 
+levelUp = (system) ->
+  randomno = 0 | Math.random() * 5
+  outclick = ["Clicking Level Multiplier + 0.1!",
+              "Critical Click Multiplier + 1!",
+              "Chance of Crit Click increased!",
+              "Chance of getting Item increased!",
+              "Idle Levelling speeds increased!"]
+  outidle = ["Idle Level Multiplier + 0.1!",
+             "Random building MPS * 3!",
+             "Costs for buildings decreased!",
+             "Skip ahead in time by 30mins!"
+             "Clicking Levelling speeds increased!"]
+  if randomno == 0
+    if system == "click" then clicklevelmult += 1 else idlelevelmult += 1
+  else if randomno == 1
+    if system == "click" then clickcrit += 1 else buildingMult()
+  else if randomno == 2
+    if system == "click" then clickcritchance = round(clickcritchance * 0.99, 5) else [x = round(x * 0.95, 3) for x in costs]
+  else if randomno == 3
+    if system == "click" then buildcrit = round(buildcrit * 0.999, 5) else money = round(money + (mps * 1800), 3)
+  else
+    if system == "click" then idlexp[1] = round(idlexp[1] * 0.9, 3) else clickxp[1] = round(clickxp[1] * 0.9, 3)
+  if system == "click" then temp = outclick[randomno] else temp = outidle[randomno]
+  $("#levellog").html temp
+
+buildingMult = ->
+  randomnobuild = 0 | Math.random() * mpsadds.length
+  mpsadds[randomnobuild] = round mpsadds[randomnobuild] * 3, 3
+
 # Main Button - increment for clicking
 inc = ->
-  money = round money + incamount, 3
+  if Math.random() < (1 - clickcritchance)
+    clickcritcheck = 1
+  if Math.random() < (1 - buildcrit)
+    randombuildget = 0 | Math.random * amounts.length
+    amounts[randombuildget] += 1
+  money = round money + (incamount * (if clickcritcheck == 1 then clickcrit else 1)), 3
   totalearned = round totalearned + incamount, 3
   totalclicks += 1
   clickxp[0] += 1
   if clickxp[0] >= clickxp[1]
     clicklevel += 1
-    incamount = round incamount * 1.5, 3
+    if clicklevel % 5 == 0
+      levelUp("click")
+    incamount = round incamount * (1.5 + round(clicklevelmult / 10, 1)), 3
     clickxp[0] = round clickxp[0] - clickxp[1], 3
     clickxp[1] = round clickxp[1] * 1.1, 3
     $("#clicklevel").html "Clicking: Level " + clicklevel
@@ -76,12 +118,14 @@ inc = ->
   $("#money").html "Balance: $" + convertCosts money
   $("#earned").html "Total Money Earned: $" + convertCosts totalearned
   $("#clicks").html "Total Clicks: " + totalclicks
+  if clickcritcheck == 1
+    clickcritcheck = 0
 
 # Toggles the display for buildings, upgrades, and stats.
 toggleDisplay = (id) ->
   if id == "build"
     $("#buildings").toggle()
-    if $("#buildings").css "display" != "none"
+    if $("#buildings").css("display") != "none"
       $("#stats").hide()
       $("#statsbutton").css "background-color", "grey"
       $("#buildbutton").css "background-color", "#5555cc"
@@ -103,8 +147,10 @@ idleInc = ->
   idlexp[0] = round idlexp[0] + (mps / 100), 3
   if idlexp[0] >= idlexp[1]
     idlelevel += 1
+    if idlelevel % 5 == 0
+      levelUp("idle")
     for b in [0..mpsadds.length]
-      mpsadds[b] = round mpsadds[b] * 1.1, 3
+      mpsadds[b] = round mpsadds[b] * (1.1 + idlelevelmult), 3
     mps = round((mps * 1.1), 3)
     idlexp[0] = round idlexp[0] - idlexp[1], 3
     idlexp[1] = round idlexp[1] * 1.5, 3
@@ -128,7 +174,7 @@ buildingFunc = (n) ->
     amounts[n] += multiplier
     $("#" + buildings[n] + "build").html buildnames[n] + "<br>($" +
                                          convertCosts(costs[n]) + ")"
-    mps = round((mps + mpsadds[n]), 1)
+    mps = round((mps + (mpsadds[n] * multiplier)), 1)
     $("#mps").html "$" + convertCosts(mps) + "/second"
     $("#" + buildings[n] + "stats").html "Amount: " + amounts[n] + "<br>$" +
                                          convertCosts(mpsadds[n] * amounts[n]) +
@@ -154,7 +200,7 @@ upgradeFunc = (n, step) ->
     $("#mps").html "$" + convertCosts(mps) + "/second"
     return
   else
-    window.alert "You do not have enough money."
+    window.alert "You do not have enough money or the required building."
     return
 
 clickUpg = (n) ->
@@ -173,7 +219,7 @@ displayUpgs = (n) ->
     upgtemp = "click"
   else
     upgtemp = buildings[n]
-  if $("#" + upgtemp + "upglist").css "display" != "none"
+  if $("#" + upgtemp + "upglist").css("display") != "none"
     $("#" + upgtemp + "displayupgs").html "Open Upgrades"
     $("#" + upgtemp + "displayupgs").css "background-color", "grey"
   else
@@ -191,10 +237,10 @@ multiplierChange = ->
     $("#multiplier").html "x1"
     $("#multiplier").css "background-color", "orange"
   else if multiplier in multiplierlist[..1]
-    multiplier = multiplierlist[multiplierlist.indexOf multiplier + 1]
+    multiplier = multiplierlist[multiplierlist.indexOf(multiplier) + 1]
     $("#multiplier").html "x" + multiplier
     $("#multiplier").css "background-color",
-                         multipliercolours[multiplierlist.indexOf multiplier]
+                         multipliercolours[multiplierlist.indexOf(multiplier)]
     for e in [1..multiplier - 1]
       for f in [0..costs.length - 1]
         costs[f] = round costs[f] + origcosts[f] * (1.15 ** (amounts[f] + e)), 3

@@ -3,41 +3,41 @@
 <html>
 
 <head>
-  <link rel="stylesheet" type="text/css" href="/app/css/styles.css">
-  <script type="text/javascript" src="/app/require/jquery-3.0.0.min.js"></script>
-  <script type="text/javascript" src="/zones/mobs.json"></script>
-  <script type="text/javascript" src="/app/js/main.js"></script>
+  <link rel="stylesheet" type="text/css" href="app/css/styles.css">
+  <script type="text/javascript" src="app/require/jquery-3.0.0.min.js"></script>
+  <script type="text/javascript" src="app/js/main.js"></script>
 </head>
 
 <body>
   <div id="mainbutton">
     <p id="money">Balance: $0</p>
+    <p id="levellog">Nothing yet!</p>
     <button id="clickbutton" onclick="inc()">Drain<br>Accounts</button>
     <p id="mps">$0.0/second</p>
     <p id="clickearns">Click earns: $1</p>
     <button class="displayupgs" id="clickdisplayupgs" onclick="displayUpgs(-1)">
-          Open Upgrades
+      Open Upgrades
+    </button>
+    <div class="upglist" id="clickupglist">
+      <div class="upgrade" id="clickupg1">
+        <button class="upgradebutton" id="clickupg1button" onclick="clickUpg(0)">
+          Flexible Fingers
         </button>
-        <div class="upglist" id="clickupglist">
-          <div class="upgrade" id="clickupg1">
-            <button class="upgradebutton" id="clickupg1button" onclick="clickUpg(0)">
-              Flexible Fingers
-            </button>
-            <div class="buttonstats" id="clickupg1stats">
-              Costs: $210 <br>
-              Multiplier: x3.0
-            </div>
-          </div> <br>
-          <div class="upgrade" id="clickupg2">
-            <button class="upgradebutton" id="clickupg2button" onclick="clickUpg(1)">
-              More Clicks!
-            </button>
-            <div class="buttonstats" id="clickupg2stats">
-              Costs: $70000 <br>
-              Multiplier: x10.0
-            </div>
-          </div>
+        <div class="buttonstats" id="clickupg1stats">
+          Costs: $210 <br>
+          Multiplier: x3.0
         </div>
+      </div> <br>
+      <div class="upgrade" id="clickupg2">
+        <button class="upgradebutton" id="clickupg2button" onclick="clickUpg(1)">
+          More Clicks!
+        </button>
+        <div class="buttonstats" id="clickupg2stats">
+          Costs: $70000 <br>
+          Multiplier: x10.0
+        </div>
+      </div>
+    </div>
   </div>
   <div id="otheritems">
     <div id="topbar">

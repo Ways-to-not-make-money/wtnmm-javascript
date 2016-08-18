@@ -1,4 +1,4 @@
-var amounts, buildingFunc, buildings, buildnames, clickUpg, clickcosts, clickeffects, clicklevel, clicknames, clickupgs, clickxp, convertCosts, costs, displayUpgs, idleInc, idlecheck, idlelevel, idlexp, inc, incamount, money, moneynameacr, mps, mpsadds, multiplier, multiplierChange, origcosts, round, toggleDisplay, totalclicks, totalearned, totalspent, upgcosts, upgeffects, upgnames, upgradeFunc, upgs,
+var amounts, buildcrit, buildingFunc, buildingMult, buildings, buildnames, clickUpg, clickcosts, clickcrit, clickcritchance, clickeffects, clicklevel, clicklevelmult, clicknames, clickupgs, clickxp, convertCosts, costs, displayUpgs, idleInc, idlecheck, idlelevel, idlelevelmult, idlexp, inc, incamount, levelUp, money, moneynameacr, mps, mpsadds, multiplier, multiplierChange, origcosts, round, toggleDisplay, totalclicks, totalearned, totalspent, upgcosts, upgeffects, upgnames, upgradeFunc, upgs,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 incamount = 1.0;
@@ -55,6 +55,16 @@ idlelevel = 1;
 
 idlexp = [0.0, 300.0];
 
+clicklevelmult = 0.0;
+
+clickcritchance = 0.9;
+
+clickcrit = 3;
+
+buildcrit = 0.999;
+
+idlelevelmult = 0.0;
+
 round = function(n, sigfigs) {
   return parseFloat(n.toFixed(sigfigs));
 };
@@ -74,14 +84,85 @@ convertCosts = function(n) {
   }
 };
 
+levelUp = function(system) {
+  var outclick, outidle, randomno, temp, x;
+  randomno = 0 | Math.random() * 5;
+  outclick = ["Clicking Level Multiplier + 0.1!", "Critical Click Multiplier + 1!", "Chance of Crit Click increased!", "Chance of getting Item increased!", "Idle Levelling speeds increased!"];
+  outidle = ["Idle Level Multiplier + 0.1!", "Random building MPS * 3!", "Costs for buildings decreased!", "Skip ahead in time by 30mins!", "Clicking Levelling speeds increased!"];
+  if (randomno === 0) {
+    if (system === "click") {
+      clicklevelmult += 1;
+    } else {
+      idlelevelmult += 1;
+    }
+  } else if (randomno === 1) {
+    if (system === "click") {
+      clickcrit += 1;
+    } else {
+      buildingMult();
+    }
+  } else if (randomno === 2) {
+    if (system === "click") {
+      clickcritchance = round(clickcritchance * 0.99, 5);
+    } else {
+      [
+        (function() {
+          var i, len, results;
+          results = [];
+          for (i = 0, len = costs.length; i < len; i++) {
+            x = costs[i];
+            results.push(x = round(x * 0.95, 3));
+          }
+          return results;
+        })()
+      ];
+    }
+  } else if (randomno === 3) {
+    if (system === "click") {
+      buildcrit = round(buildcrit * 0.999, 5);
+    } else {
+      money = round(money + (mps * 1800), 3);
+    }
+  } else {
+    if (system === "click") {
+      idlexp[1] = round(idlexp[1] * 0.9, 3);
+    } else {
+      clickxp[1] = round(clickxp[1] * 0.9, 3);
+    }
+  }
+  if (system === "click") {
+    temp = outclick[randomno];
+  } else {
+    temp = outidle[randomno];
+  }
+  return $("#levellog").html(temp);
+};
+
+buildingMult = function() {
+  var randomnobuild;
+  randomnobuild = 0 | Math.random() * mpsadds.length;
+  return mpsadds[randomnobuild] = round(mpsadds[randomnobuild] * 3, 3);
+};
+
 inc = function() {
-  money = round(money + incamount, 3);
+  var clickcritcheck, randombuildget;
+  if (Math.random() < (1 - clickcritchance)) {
+    clickcritcheck = 1;
+  }
+  if (Math.random() < (1 - buildcrit)) {
+    randombuildget = 0 | Math.random * amounts.length;
+    amounts[randombuildget] += 1;
+  }
+  money = round(money + (incamount * (clickcritcheck === 1 ? clickcrit : 1)), 3);
   totalearned = round(totalearned + incamount, 3);
   totalclicks += 1;
   clickxp[0] += 1;
   if (clickxp[0] >= clickxp[1]) {
     clicklevel += 1;
-    incamount = round(incamount * 1.5, 3);
+    if (clicklevel % 5 === 0) {
+      levelUp("click");
+    }
+    incamount = round(incamount * (1.5 + round(clicklevelmult / 10, 1)), 3);
     clickxp[0] = round(clickxp[0] - clickxp[1], 3);
     clickxp[1] = round(clickxp[1] * 1.1, 3);
     $("#clicklevel").html("Clicking: Level " + clicklevel);
@@ -91,13 +172,16 @@ inc = function() {
   $("#clickxpamount").html(round(clickxp[0] / clickxp[1] * 100, 1) + "%");
   $("#money").html("Balance: $" + convertCosts(money));
   $("#earned").html("Total Money Earned: $" + convertCosts(totalearned));
-  return $("#clicks").html("Total Clicks: " + totalclicks);
+  $("#clicks").html("Total Clicks: " + totalclicks);
+  if (clickcritcheck === 1) {
+    return clickcritcheck = 0;
+  }
 };
 
 toggleDisplay = function(id) {
   if (id === "build") {
     $("#buildings").toggle();
-    if ($("#buildings").css("display" !== "none")) {
+    if ($("#buildings").css("display") !== "none") {
       $("#stats").hide();
       $("#statsbutton").css("background-color", "grey");
       return $("#buildbutton").css("background-color", "#5555cc");
@@ -123,8 +207,11 @@ idleInc = function() {
   idlexp[0] = round(idlexp[0] + (mps / 100), 3);
   if (idlexp[0] >= idlexp[1]) {
     idlelevel += 1;
+    if (idlelevel % 5 === 0) {
+      levelUp("idle");
+    }
     for (b = i = 0, ref = mpsadds.length; 0 <= ref ? i <= ref : i >= ref; b = 0 <= ref ? ++i : --i) {
-      mpsadds[b] = round(mpsadds[b] * 1.1, 3);
+      mpsadds[b] = round(mpsadds[b] * (1.1 + idlelevelmult), 3);
     }
     mps = round(mps * 1.1, 3);
     idlexp[0] = round(idlexp[0] - idlexp[1], 3);
@@ -151,7 +238,7 @@ buildingFunc = function(n) {
     }
     amounts[n] += multiplier;
     $("#" + buildings[n] + "build").html(buildnames[n] + "<br>($" + convertCosts(costs[n]) + ")");
-    mps = round(mps + mpsadds[n], 1);
+    mps = round(mps + (mpsadds[n] * multiplier), 1);
     $("#mps").html("$" + convertCosts(mps) + "/second");
     $("#" + buildings[n] + "stats").html("Amount: " + amounts[n] + "<br>$" + convertCosts(mpsadds[n] * amounts[n]) + "/second<br>Total Spent: $" + convertCosts(totalspent[n]));
     if (idlecheck === 0) {
@@ -173,7 +260,7 @@ upgradeFunc = function(n, step) {
     mpsadds[n] = round(mpsadds[n] * upgeffects[n][step], 3);
     $("#mps").html("$" + convertCosts(mps) + "/second");
   } else {
-    window.alert("You do not have enough money.");
+    window.alert("You do not have enough money or the required building.");
   }
 };
 
@@ -196,7 +283,7 @@ displayUpgs = function(n) {
   } else {
     upgtemp = buildings[n];
   }
-  if ($("#" + upgtemp + "upglist").css("display" !== "none")) {
+  if ($("#" + upgtemp + "upglist").css("display") !== "none") {
     $("#" + upgtemp + "displayupgs").html("Open Upgrades");
     $("#" + upgtemp + "displayupgs").css("background-color", "grey");
   } else {
@@ -218,7 +305,7 @@ multiplierChange = function() {
     $("#multiplier").html("x1");
     $("#multiplier").css("background-color", "orange");
   } else if (indexOf.call(multiplierlist.slice(0, 2), multiplier) >= 0) {
-    multiplier = multiplierlist[multiplierlist.indexOf(multiplier + 1)];
+    multiplier = multiplierlist[multiplierlist.indexOf(multiplier) + 1];
     $("#multiplier").html("x" + multiplier);
     $("#multiplier").css("background-color", multipliercolours[multiplierlist.indexOf(multiplier)]);
     for (e = j = 1, ref1 = multiplier - 1; 1 <= ref1 ? j <= ref1 : j >= ref1; e = 1 <= ref1 ? ++j : --j) {
