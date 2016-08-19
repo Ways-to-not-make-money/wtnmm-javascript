@@ -9,5 +9,4 @@ gulp.task('coffee', function () {
 
 gulp.task('watch-coffee', function () {
   gulp.watch(['./app/coffee/*.coffee'], ['coffee']);
-  gulp.watch(['.app/js/*.cson'], ['cson']);
 });
