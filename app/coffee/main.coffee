@@ -1,6 +1,6 @@
 # General
 incamount = 1.0
-money = 0.0
+money = 10000.0
 moneynameacr = ["", "million", "billion", "trillion", "quadrillion",
                 "quintillion"]
 mps = 0.0
@@ -16,7 +16,7 @@ buildnames = ["Auto-Clicker", "Money Printer", "Counterfeit Company",
               "Sharemarket Crash", "Bank Heist"]
 
 # Upgrade Lists
-upgs = [[0, 0], [0, 0], [0], [0], [0]]
+upgs = [[0, 0], [0, 0], [0, 0], [0], [0]]
 upgcosts = [[100, 4200], [500, 15000], [1690, 40000], [50000], [500000]]
 upgeffects = [[1.5, 2.5], [2.0, 3.0], [2.0, 4.0], [3.0], [3.5]]
 upgnames = [["Clicking Factories", "Iron-Clad Mice"],
@@ -37,6 +37,7 @@ idlecheck = 0
 totalclicks = 0
 totalearned = 0
 totalspent = [0, 0, 0, 0, 0]
+totalcrits = 0
 
 # Levelling
 clicklevel = 1
@@ -49,6 +50,10 @@ clickcritchance = 0.9
 clickcrit = 3
 buildcrit = 0.999
 idlelevelmult = 0.0
+
+$("html").bind "keypress", (e) ->
+  if e.keyCode == 13
+    return false
 
 round = (n, sigfigs) ->
   return parseFloat n.toFixed sigfigs
@@ -97,11 +102,13 @@ buildingMult = ->
 inc = ->
   if Math.random() < (1 - clickcritchance)
     clickcritcheck = 1
+    totalcrits += 1
+    $("#crits").html "Total Crit Clicks: " + totalcrits
   if Math.random() < (1 - buildcrit)
     randombuildget = 0 | Math.random * amounts.length
     amounts[randombuildget] += 1
   money = round money + (incamount * (if clickcritcheck == 1 then clickcrit else 1)), 3
-  totalearned = round totalearned + incamount, 3
+  totalearned = round totalearned + (incamount * (if clickcritcheck == 1 then clickcrit else 1)), 3
   totalclicks += 1
   clickxp[0] += 1
   if clickxp[0] >= clickxp[1]
@@ -133,7 +140,7 @@ toggleDisplay = (id) ->
       $("#buildbutton").css "background-color", "grey"
   else
     $("#stats").toggle()
-    if $("#stats").css "display" != "none"
+    if $("#stats").css("display") != "none"
       $("#buildings").hide()
       $("#buildbutton").css "background-color", "grey"
       $("#statsbutton").css "background-color", "#5555cc"
@@ -193,8 +200,9 @@ upgradeFunc = (n, step) ->
   if money >= upgcosts[n][step] and amounts[n] >= 1
     money -= upgcosts[n][step]
     upgs[n][step] += 1
-    $("#" + buildings[n] + "upg" + (step + 1)).css "margin-bottom", "0"
     $("#" + buildings[n] + "upg" + (step + 1)).hide()
+    if !(0 in upgs[n])
+      $("#" + buildings[n] + "upglist").css("height", 0)
     mps += amounts[n] * (mpsadds[n] * (upgeffects[n][step] - 1))
     mpsadds[n] = round mpsadds[n] * upgeffects[n][step], 3
     $("#mps").html "$" + convertCosts(mps) + "/second"
@@ -208,9 +216,9 @@ clickUpg = (n) ->
     money -= clickcosts[n]
     clickupgs[n] += 1
     incamount *= clickeffects[n]
-    $("#clickupg" + (n + 1)).css "margin-bottom", "0"
     $("#clickupg" + (n + 1)).hide()
-  else
+  if !(0 in clickupgs)
+    $("#clickupglist").css("height", 0)
     window.alert "You do not have enough money."
 
 # Displays upgrades.

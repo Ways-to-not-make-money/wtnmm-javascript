@@ -1,9 +1,9 @@
-var amounts, buildcrit, buildingFunc, buildingMult, buildings, buildnames, clickUpg, clickcosts, clickcrit, clickcritchance, clickeffects, clicklevel, clicklevelmult, clicknames, clickupgs, clickxp, convertCosts, costs, displayUpgs, idleInc, idlecheck, idlelevel, idlelevelmult, idlexp, inc, incamount, levelUp, money, moneynameacr, mps, mpsadds, multiplier, multiplierChange, origcosts, round, toggleDisplay, totalclicks, totalearned, totalspent, upgcosts, upgeffects, upgnames, upgradeFunc, upgs,
+var amounts, buildcrit, buildingFunc, buildingMult, buildings, buildnames, clickUpg, clickcosts, clickcrit, clickcritchance, clickeffects, clicklevel, clicklevelmult, clicknames, clickupgs, clickxp, convertCosts, costs, displayUpgs, idleInc, idlecheck, idlelevel, idlelevelmult, idlexp, inc, incamount, levelUp, money, moneynameacr, mps, mpsadds, multiplier, multiplierChange, origcosts, round, toggleDisplay, totalclicks, totalcrits, totalearned, totalspent, upgcosts, upgeffects, upgnames, upgradeFunc, upgs,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 incamount = 1.0;
 
-money = 0.0;
+money = 10000.0;
 
 moneynameacr = ["", "million", "billion", "trillion", "quadrillion", "quintillion"];
 
@@ -23,7 +23,7 @@ buildings = ["ac", "mp", "cc", "sc", "bh"];
 
 buildnames = ["Auto-Clicker", "Money Printer", "Counterfeit Company", "Sharemarket Crash", "Bank Heist"];
 
-upgs = [[0, 0], [0, 0], [0], [0], [0]];
+upgs = [[0, 0], [0, 0], [0, 0], [0], [0]];
 
 upgcosts = [[100, 4200], [500, 15000], [1690, 40000], [50000], [500000]];
 
@@ -47,6 +47,8 @@ totalearned = 0;
 
 totalspent = [0, 0, 0, 0, 0];
 
+totalcrits = 0;
+
 clicklevel = 1;
 
 clickxp = [0.0, 100.0];
@@ -64,6 +66,12 @@ clickcrit = 3;
 buildcrit = 0.999;
 
 idlelevelmult = 0.0;
+
+$("html").bind("keypress", function(e) {
+  if (e.keyCode === 13) {
+    return false;
+  }
+});
 
 round = function(n, sigfigs) {
   return parseFloat(n.toFixed(sigfigs));
@@ -148,13 +156,15 @@ inc = function() {
   var clickcritcheck, randombuildget;
   if (Math.random() < (1 - clickcritchance)) {
     clickcritcheck = 1;
+    totalcrits += 1;
+    $("#crits").html("Total Crit Clicks: " + totalcrits);
   }
   if (Math.random() < (1 - buildcrit)) {
     randombuildget = 0 | Math.random * amounts.length;
     amounts[randombuildget] += 1;
   }
   money = round(money + (incamount * (clickcritcheck === 1 ? clickcrit : 1)), 3);
-  totalearned = round(totalearned + incamount, 3);
+  totalearned = round(totalearned + (incamount * (clickcritcheck === 1 ? clickcrit : 1)), 3);
   totalclicks += 1;
   clickxp[0] += 1;
   if (clickxp[0] >= clickxp[1]) {
@@ -190,7 +200,7 @@ toggleDisplay = function(id) {
     }
   } else {
     $("#stats").toggle();
-    if ($("#stats").css("display" !== "none")) {
+    if ($("#stats").css("display") !== "none") {
       $("#buildings").hide();
       $("#buildbutton").css("background-color", "grey");
       return $("#statsbutton").css("background-color", "#5555cc");
@@ -254,8 +264,10 @@ upgradeFunc = function(n, step) {
   if (money >= upgcosts[n][step] && amounts[n] >= 1) {
     money -= upgcosts[n][step];
     upgs[n][step] += 1;
-    $("#" + buildings[n] + "upg" + (step + 1)).css("margin-bottom", "0");
     $("#" + buildings[n] + "upg" + (step + 1)).hide();
+    if (!(indexOf.call(upgs[n], 0) >= 0)) {
+      $("#" + buildings[n] + "upglist").css("height", 0);
+    }
     mps += amounts[n] * (mpsadds[n] * (upgeffects[n][step] - 1));
     mpsadds[n] = round(mpsadds[n] * upgeffects[n][step], 3);
     $("#mps").html("$" + convertCosts(mps) + "/second");
@@ -269,9 +281,10 @@ clickUpg = function(n) {
     money -= clickcosts[n];
     clickupgs[n] += 1;
     incamount *= clickeffects[n];
-    $("#clickupg" + (n + 1)).css("margin-bottom", "0");
-    return $("#clickupg" + (n + 1)).hide();
-  } else {
+    $("#clickupg" + (n + 1)).hide();
+  }
+  if (!(indexOf.call(clickupgs, 0) >= 0)) {
+    $("#clickupglist").css("height", 0);
     return window.alert("You do not have enough money.");
   }
 };
