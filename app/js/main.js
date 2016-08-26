@@ -3,7 +3,7 @@ var amounts, buildcrit, buildingFunc, buildingMult, buildings, buildnames, click
 
 incamount = 1.0;
 
-money = 10000.0;
+money = 0.0;
 
 moneynameacr = ["", "million", "billion", "trillion", "quadrillion", "quintillion"];
 
