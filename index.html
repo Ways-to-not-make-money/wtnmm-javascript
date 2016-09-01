@@ -8,6 +8,7 @@
   <link rel="stylesheet" type="text/css" href="app/css/styles.css">
   <script type="text/javascript" src="app/require/jquery-3.0.0.min.js"></script>
   <script type="text/javascript" src="app/js/main.js"></script>
+  <script type="text/javascript" src="app/require/js.cookie.js"></script>
 </head>
 
 <body>
@@ -215,6 +216,10 @@
   <script type="text/javascript">
       $(".progressbarout").width(($("#user").width() - 10) + "px")
   </script>
+  <br>
+  <button class="savebutton" id="savebutton" onclick="save()">
+      Save Status (Make sure cookies are enabled)
+  </button>
 </body>
 
 </html>
