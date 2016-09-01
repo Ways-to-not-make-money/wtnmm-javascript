@@ -67,6 +67,15 @@ buildcrit = 0.999;
 
 idlelevelmult = 0.0;
 
+getcookie = function(name){
+  var cookieval; cookieval = Cookies.get(name);
+  if(typeof cookieval === "undefined"){
+    return 0;
+  } else {
+    return cookieval;
+  }
+}
+
 $("html").bind("keypress", function(e) {
   if (e.keyCode === 13) {
     return false;
