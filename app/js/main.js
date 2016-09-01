@@ -1,23 +1,32 @@
+getcookie = function(name, defaultv){
+  var cookieval; cookieval = Cookies.get(name);
+  if(typeof cookieval === "undefined"){
+    return defaultv;
+  } else {
+    return cookieval;
+  }
+}
+
 var amounts, buildcrit, buildingFunc, buildingMult, buildings, buildnames, clickUpg, clickcosts, clickcrit, clickcritchance, clickeffects, clicklevel, clicklevelmult, clicknames, clickupgs, clickxp, convertCosts, costs, displayUpgs, idleInc, idlecheck, idlelevel, idlelevelmult, idlexp, inc, incamount, levelUp, money, moneynameacr, mps, mpsadds, multiplier, multiplierChange, origcosts, round, toggleDisplay, totalclicks, totalcrits, totalearned, totalspent, upgcosts, upgeffects, upgnames, upgradeFunc, upgs,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-incamount = 1.0;
+incamount = getcookie("incamount", 1.0);
 
-money = 0.0;
+money = getcookie("money", 0.0);
 
 moneynameacr = ["", "million", "billion", "trillion", "quadrillion", "quintillion"];
 
-mps = 0.0;
+mps = getcookie("mps", 0.0);
 
 multiplier = 1;
 
-amounts = [0, 0, 0, 0, 0];
+amounts = getcookie("amounts",[0,0,0,0,0]);
 
-costs = [8.0, 120.0, 1337.0, 20160.0, 123456.0];
+costs = getcookie("costs",[8.0, 120.0, 1337.0, 20160.0, 123456.0]);
 
 origcosts = [8.0, 120.0, 1337.0, 20160.0, 123456.0];
 
-mpsadds = [0.1, 0.4, 3.0, 7.5, 32.1];
+mpsadds = getcookie("mpsadds",[0.1, 0.4, 3.0, 7.5, 32.1]);
 
 buildings = ["ac", "mp", "cc", "sc", "bh"];
 
@@ -66,15 +75,6 @@ clickcrit = 3;
 buildcrit = 0.999;
 
 idlelevelmult = 0.0;
-
-getcookie = function(name){
-  var cookieval; cookieval = Cookies.get(name);
-  if(typeof cookieval === "undefined"){
-    return 0;
-  } else {
-    return cookieval;
-  }
-}
 
 $("html").bind("keypress", function(e) {
   if (e.keyCode === 13) {
