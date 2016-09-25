@@ -1,22 +1,33 @@
+for a in [0..varslist.length - 1]
+  if localStorage.getItem(varslist[a][0]) == null
+    localStorage.setItem(varslist[a][0], varslist[a][1])
+
+retrieve = (name) ->
+  if "," in localStorage.getItem(name)
+    templist = []
+    templist.push(parseFloat(x)) for x in localStorage.getItem(name).split(",")
+    return templist
+  return eval localStorage.getItem(name)
+
 # General
-incamount = 1.0
-money = 10000.0
+incamount = retrieve("incamount")
+money = retrieve("money")
 moneynameacr = ["", "million", "billion", "trillion", "quadrillion",
                 "quintillion"]
-mps = 0.0
+mps = retrieve("mps")
 multiplier = 1
 
 # Building Lists
-amounts = [0, 0, 0, 0, 0]
-costs = [8.0, 120.0, 1337.0, 20160.0, 123456.0]
-origcosts = [8.0, 120.0, 1337.0, 20160.0, 123456.0]
-mpsadds = [0.1, 0.4, 3.0, 7.5, 32.1]
+amounts = retrieve("amounts")
+costs = retrieve("costs")
+origcosts = retrieve("costs")
+mpsadds = retrieve("mpsadds")
 buildings = ["ac", "mp", "cc", "sc", "bh"]
 buildnames = ["Auto-Clicker", "Money Printer", "Counterfeit Company",
               "Sharemarket Crash", "Bank Heist"]
 
 # Upgrade Lists
-upgs = [[0, 0], [0, 0], [0, 0], [0], [0]]
+upgs = retrieve("upgs")
 upgcosts = [[100, 4200], [500, 15000], [1690, 40000], [50000], [500000]]
 upgeffects = [[1.5, 2.5], [2.0, 3.0], [2.0, 4.0], [3.0], [3.5]]
 upgnames = [["Clicking Factories", "Iron-Clad Mice"],
@@ -25,7 +36,7 @@ upgnames = [["Clicking Factories", "Iron-Clad Mice"],
             ["Fire on Wall Street"], ["Lockpicks"]]
 
 # Click Upgrade Lists
-clickupgs = [0, 0]
+clickupgs = retrieve("clickupgs")
 clickcosts = [210, 70000]
 clickeffects = [3, 10]
 clicknames = ["Flexible Fingers", "More Clicks!"]
@@ -34,29 +45,24 @@ clicknames = ["Flexible Fingers", "More Clicks!"]
 idlecheck = 0
 
 # Stats
-totalclicks = 0
-totalearned = 0
-totalspent = [0, 0, 0, 0, 0]
-totalcrits = 0
+totalclicks = retrieve("totalclicks")
+totalearned = retrieve("totalearned")
+totalspent = retrieve("totalspent")
+totalcrits = retrieve("totalcrits")
 
 # Levelling
-clicklevel = 1
-clickxp = [0.0, 100.0]
-idlelevel = 1
-idlexp = [0.0, 300.0]
+clicklvinfo = retrieve("clicklvinfo")
+idlelvinfo = retrieve("idlelvinfo")
 
-clicklevelmult = 0.0
-clickcritchance = 0.9
-clickcrit = 3
-buildcrit = 0.999
-idlelevelmult = 0.0
+levelperks = retrieve("levelperks")
+# clicklevelmult, idlelevelmult, clickcrit, clickcritchance, buildcrit
+
+round = (n, sigfigs) ->
+  return parseFloat n.toFixed sigfigs
 
 $("html").bind "keypress", (e) ->
   if e.keyCode == 13
     return false
-
-round = (n, sigfigs) ->
-  return parseFloat n.toFixed sigfigs
 
 convertCosts = (n) ->
   check = 0
@@ -82,15 +88,15 @@ levelUp = (system) ->
              "Skip ahead in time by 30mins!"
              "Clicking Levelling speeds increased!"]
   if randomno == 0
-    if system == "click" then clicklevelmult += 1 else idlelevelmult += 1
+    if system == "click" then levelperks[0] += 1 else levelperks[1] += 1
   else if randomno == 1
-    if system == "click" then clickcrit += 1 else buildingMult()
+    if system == "click" then levelperks[2] += 1 else buildingMult()
   else if randomno == 2
-    if system == "click" then clickcritchance = round(clickcritchance * 0.99, 5) else [x = round(x * 0.95, 3) for x in costs]
+    if system == "click" then levelperks[3] = round(levelperks[3] * 0.99, 5) else [x = round(x * 0.95, 3) for x in costs]
   else if randomno == 3
-    if system == "click" then buildcrit = round(buildcrit * 0.999, 5) else money = round(money + (mps * 1800), 3)
+    if system == "click" then levelperks[4] = round(levelperks[4] * 0.999, 5) else money = round(money + (mps * 1800), 3)
   else
-    if system == "click" then idlexp[1] = round(idlexp[1] * 0.9, 3) else clickxp[1] = round(clickxp[1] * 0.9, 3)
+    if system == "click" then idlelvinfo[2] = round(idlelvinfo[2] * 0.9, 3) else clicklvinfo[2] = round(clicklvinfo[2] * 0.9, 3)
   if system == "click" then temp = outclick[randomno] else temp = outidle[randomno]
   $("#levellog").html temp
 
@@ -100,28 +106,28 @@ buildingMult = ->
 
 # Main Button - increment for clicking
 inc = ->
-  if Math.random() < (1 - clickcritchance)
+  if Math.random() < (1 - levelperks[3])
     clickcritcheck = 1
     totalcrits += 1
     $("#crits").html "Total Crit Clicks: " + totalcrits
-  if Math.random() < (1 - buildcrit)
+  if Math.random() < (1 - levelperks[4])
     randombuildget = 0 | Math.random * amounts.length
     amounts[randombuildget] += 1
-  money = round money + (incamount * (if clickcritcheck == 1 then clickcrit else 1)), 3
-  totalearned = round totalearned + (incamount * (if clickcritcheck == 1 then clickcrit else 1)), 3
+  money = round money + (incamount * (if clickcritcheck == 1 then levelperks[2] else 1)), 3
+  totalearned = round totalearned + (incamount * (if clickcritcheck == 1 then levelperks[2] else 1)), 3
   totalclicks += 1
-  clickxp[0] += 1
-  if clickxp[0] >= clickxp[1]
-    clicklevel += 1
-    if clicklevel % 5 == 0
+  clicklvinfo[1] += 1
+  if clicklvinfo[1] >= clicklvinfo[2]
+    clicklvinfo[0] += 1
+    if clicklvinfo[0] % 5 == 0
       levelUp("click")
-    incamount = round incamount * (1.5 + round(clicklevelmult / 10, 1)), 3
-    clickxp[0] = round clickxp[0] - clickxp[1], 3
-    clickxp[1] = round clickxp[1] * 1.1, 3
-    $("#clicklevel").html "Clicking: Level " + clicklevel
+    incamount = round incamount * (1.5 + round(levelperks[0] / 10, 1)), 3
+    clicklvinfo[1] = round clicklvinfo[1] - clicklvinfo[2], 3
+    clicklvinfo[2] = round clicklvinfo[2] * 1.1, 3
+    $("#clicklvinfo[0]").html "Clicking: Level " + clicklvinfo[0]
     $("#clickearns").html "Click earns: $" + incamount
-  $("#clickbar").width round(clickxp[0] / clickxp[1] * 100, 1) + "%"
-  $("#clickxpamount").html round(clickxp[0] / clickxp[1] * 100, 1) + "%"
+  $("#clickbar").width round(clicklvinfo[1] / clicklvinfo[2] * 100, 1) + "%"
+  $("#clickxpamount").html round(clicklvinfo[1] / clicklvinfo[2] * 100, 1) + "%"
   $("#money").html "Balance: $" + convertCosts money
   $("#earned").html "Total Money Earned: $" + convertCosts totalearned
   $("#clicks").html "Total Clicks: " + totalclicks
@@ -151,19 +157,19 @@ toggleDisplay = (id) ->
 idleInc = ->
   money = round money + (mps / 100), 3
   totalearned = round totalearned + (mps / 100), 3
-  idlexp[0] = round idlexp[0] + (mps / 100), 3
-  if idlexp[0] >= idlexp[1]
-    idlelevel += 1
-    if idlelevel % 5 == 0
+  idlelvinfo[1] = round idlelvinfo[1] + (mps / 100), 3
+  if idlelvinfo[1] >= idlelvinfo[2]
+    idlelvinfo[0] += 1
+    if idlelvinfo[0] % 5 == 0
       levelUp("idle")
     for b in [0..mpsadds.length]
-      mpsadds[b] = round mpsadds[b] * (1.1 + idlelevelmult), 3
+      mpsadds[b] = round mpsadds[b] * (1.1 + levelperks[1]), 3
     mps = round((mps * 1.1), 3)
-    idlexp[0] = round idlexp[0] - idlexp[1], 3
-    idlexp[1] = round idlexp[1] * 1.5, 3
-    $("#idlelevel").html "Idling: Level " + idlelevel
-  $("#idlebar").width round(idlexp[0] / idlexp[1] * 100, 1) + "%"
-  $("#idlexpamount").html round(idlexp[0] / idlexp[1] * 100, 1) + "%"
+    idlelvinfo[1] = round idlelvinfo[1] - idlelvinfo[2], 3
+    idlelvinfo[2] = round idlelvinfo[2] * 2, 3
+    $("#idlelvinfo[0]").html "Idling: Level " + idlelvinfo[0]
+  $("#idlebar").width round(idlelvinfo[1] / idlelvinfo[2] * 100, 1) + "%"
+  $("#idlexpamount").html round(idlelvinfo[1] / idlelvinfo[2] * 100, 1) + "%"
   $("#money").html "Balance: $" + convertCosts money
   $("#earned").html "Total Money Earned: $" + convertCosts totalearned
   window.setTimeout idleInc, 10
@@ -181,7 +187,7 @@ buildingFunc = (n) ->
     amounts[n] += multiplier
     $("#" + buildings[n] + "build").html buildnames[n] + "<br>($" +
                                          convertCosts(costs[n]) + ")"
-    mps = round((mps + (mpsadds[n] * multiplier)), 1)
+    mps = round mps + (mpsadds[n] * multiplier), 1
     $("#mps").html "$" + convertCosts(mps) + "/second"
     $("#" + buildings[n] + "stats").html "Amount: " + amounts[n] + "<br>$" +
                                          convertCosts(mpsadds[n] * amounts[n]) +
@@ -217,9 +223,12 @@ clickUpg = (n) ->
     clickupgs[n] += 1
     incamount *= clickeffects[n]
     $("#clickupg" + (n + 1)).hide()
-  if !(0 in clickupgs)
-    $("#clickupglist").css("height", 0)
+    if !(0 in clickupgs)
+      $("#clickupglist").css("height", 0)
+    $("#clickearns").html "Click earns: $" + incamount
+  else
     window.alert "You do not have enough money."
+    return
 
 # Displays upgrades.
 displayUpgs = (n) ->
