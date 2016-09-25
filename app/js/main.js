@@ -1,29 +1,53 @@
-var amounts, buildcrit, buildingFunc, buildingMult, buildings, buildnames, clickUpg, clickcosts, clickcrit, clickcritchance, clickeffects, clicklevel, clicklevelmult, clicknames, clickupgs, clickxp, convertCosts, costs, displayUpgs, idleInc, idlecheck, idlelevel, idlelevelmult, idlexp, inc, incamount, levelUp, money, moneynameacr, mps, mpsadds, multiplier, multiplierChange, origcosts, round, toggleDisplay, totalclicks, totalcrits, totalearned, totalspent, upgcosts, upgeffects, upgnames, upgradeFunc, upgs,
+var varslist;
+
+varslist = [["incamount", 1.0], ["money", 0.0], ["mps", 0], ["amounts", [0, 0, 0, 0, 0]], ["costs", [8.0, 120.0, 1337.0, 20160.0, 123456.0]], ["origcosts", [8.0, 120.0, 1337.0, 20160.0, 123456.0]], ["mpsadds", [0.1, 0.4, 3.0, 7.5, 32.1]], ["upgs", [[0, 0], [0, 0], [0, 0], [0], [0]]], ["clickupgs", [0, 0]], ["totalclicks", 0], ["totalearned", 0], ["totalspent", [0, 0, 0, 0, 0]], ["totalcrits", 0], ["clicklvinfo", [1, 0.0, 100.0]], ["idlelvinfo", [1, 0.0, 300.0]], ["levelperks", [0.0, 0.0, 3, 0.9, 0.999]]];
+
+var a, amounts, buildingFunc, buildingMult, buildings, buildnames, clickUpg, clickcosts, clickeffects, clicklvinfo, clicknames, clickupgs, convertCosts, costs, displayUpgs, i, idleInc, idlecheck, idlelvinfo, inc, incamount, levelUp, levelperks, money, moneynameacr, mps, mpsadds, multiplier, multiplierChange, origcosts, ref, retrieve, round, toggleDisplay, totalclicks, totalcrits, totalearned, totalspent, upgcosts, upgeffects, upgnames, upgradeFunc, upgs,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-incamount = 1.0;
+for (a = i = 0, ref = varslist.length - 1; 0 <= ref ? i <= ref : i >= ref; a = 0 <= ref ? ++i : --i) {
+  if (localStorage.getItem(varslist[a][0]) === null) {
+    localStorage.setItem(varslist[a][0], varslist[a][1]);
+  }
+}
 
-money = 0.0;
+retrieve = function(name) {
+  var j, len, ref1, templist, x;
+  if (indexOf.call(localStorage.getItem(name), ",") >= 0) {
+    templist = [];
+    ref1 = localStorage.getItem(name).split(",");
+    for (j = 0, len = ref1.length; j < len; j++) {
+      x = ref1[j];
+      templist.push(parseFloat(x));
+    }
+    return templist;
+  }
+  return eval(localStorage.getItem(name));
+};
+
+incamount = retrieve("incamount");
+
+money = retrieve("money");
 
 moneynameacr = ["", "million", "billion", "trillion", "quadrillion", "quintillion"];
 
-mps = 0.0;
+mps = retrieve("mps");
 
 multiplier = 1;
 
-amounts = [0, 0, 0, 0, 0];
+amounts = retrieve("amounts");
 
-costs = [8.0, 120.0, 1337.0, 20160.0, 123456.0];
+costs = retrieve("costs");
 
-origcosts = [8.0, 120.0, 1337.0, 20160.0, 123456.0];
+origcosts = retrieve("costs");
 
-mpsadds = [0.1, 0.4, 3.0, 7.5, 32.1];
+mpsadds = retrieve("mpsadds");
 
 buildings = ["ac", "mp", "cc", "sc", "bh"];
 
 buildnames = ["Auto-Clicker", "Money Printer", "Counterfeit Company", "Sharemarket Crash", "Bank Heist"];
 
-upgs = [[0, 0], [0, 0], [0, 0], [0], [0]];
+upgs = retrieve("upgs");
 
 upgcosts = [[100, 4200], [500, 15000], [1690, 40000], [50000], [500000]];
 
@@ -31,7 +55,7 @@ upgeffects = [[1.5, 2.5], [2.0, 3.0], [2.0, 4.0], [3.0], [3.5]];
 
 upgnames = [["Clicking Factories", "Iron-Clad Mice"], ["Printing Templates", "Efficient Ink Cartridges"], ["Skilled Fake Money Making", "Patented Products"], ["Fire on Wall Street"], ["Lockpicks"]];
 
-clickupgs = [0, 0];
+clickupgs = retrieve("clickupgs");
 
 clickcosts = [210, 70000];
 
@@ -41,31 +65,23 @@ clicknames = ["Flexible Fingers", "More Clicks!"];
 
 idlecheck = 0;
 
-totalclicks = 0;
+totalclicks = retrieve("totalclicks");
 
-totalearned = 0;
+totalearned = retrieve("totalearned");
 
-totalspent = [0, 0, 0, 0, 0];
+totalspent = retrieve("totalspent");
 
-totalcrits = 0;
+totalcrits = retrieve("totalcrits");
 
-clicklevel = 1;
+clicklvinfo = retrieve("clicklvinfo");
 
-clickxp = [0.0, 100.0];
+idlelvinfo = retrieve("idlelvinfo");
 
-idlelevel = 1;
+levelperks = retrieve("levelperks");
 
-idlexp = [0.0, 300.0];
-
-clicklevelmult = 0.0;
-
-clickcritchance = 0.9;
-
-clickcrit = 3;
-
-buildcrit = 0.999;
-
-idlelevelmult = 0.0;
+round = function(n, sigfigs) {
+  return parseFloat(n.toFixed(sigfigs));
+};
 
 $("html").bind("keypress", function(e) {
   if (e.keyCode === 13) {
@@ -73,14 +89,10 @@ $("html").bind("keypress", function(e) {
   }
 });
 
-round = function(n, sigfigs) {
-  return parseFloat(n.toFixed(sigfigs));
-};
-
 convertCosts = function(n) {
-  var a, check, i, ref;
+  var check, j, ref1;
   check = 0;
-  for (a = i = 1, ref = moneynameacr.length - 1; 1 <= ref ? i <= ref : i >= ref; a = 1 <= ref ? ++i : --i) {
+  for (a = j = 1, ref1 = moneynameacr.length - 1; 1 <= ref1 ? j <= ref1 : j >= ref1; a = 1 <= ref1 ? ++j : --j) {
     if (n >= Math.pow(10, 6 + ((a - 1) * 3))) {
       check += 1;
     }
@@ -99,26 +111,26 @@ levelUp = function(system) {
   outidle = ["Idle Level Multiplier + 0.1!", "Random building MPS * 3!", "Costs for buildings decreased!", "Skip ahead in time by 30mins!", "Clicking Levelling speeds increased!"];
   if (randomno === 0) {
     if (system === "click") {
-      clicklevelmult += 1;
+      levelperks[0] += 1;
     } else {
-      idlelevelmult += 1;
+      levelperks[1] += 1;
     }
   } else if (randomno === 1) {
     if (system === "click") {
-      clickcrit += 1;
+      levelperks[2] += 1;
     } else {
       buildingMult();
     }
   } else if (randomno === 2) {
     if (system === "click") {
-      clickcritchance = round(clickcritchance * 0.99, 5);
+      levelperks[3] = round(levelperks[3] * 0.99, 5);
     } else {
       [
         (function() {
-          var i, len, results;
+          var j, len, results;
           results = [];
-          for (i = 0, len = costs.length; i < len; i++) {
-            x = costs[i];
+          for (j = 0, len = costs.length; j < len; j++) {
+            x = costs[j];
             results.push(x = round(x * 0.95, 3));
           }
           return results;
@@ -127,15 +139,15 @@ levelUp = function(system) {
     }
   } else if (randomno === 3) {
     if (system === "click") {
-      buildcrit = round(buildcrit * 0.999, 5);
+      levelperks[4] = round(levelperks[4] * 0.999, 5);
     } else {
       money = round(money + (mps * 1800), 3);
     }
   } else {
     if (system === "click") {
-      idlexp[1] = round(idlexp[1] * 0.9, 3);
+      idlelvinfo[2] = round(idlelvinfo[2] * 0.9, 3);
     } else {
-      clickxp[1] = round(clickxp[1] * 0.9, 3);
+      clicklvinfo[2] = round(clicklvinfo[2] * 0.9, 3);
     }
   }
   if (system === "click") {
@@ -154,32 +166,32 @@ buildingMult = function() {
 
 inc = function() {
   var clickcritcheck, randombuildget;
-  if (Math.random() < (1 - clickcritchance)) {
+  if (Math.random() < (1 - levelperks[3])) {
     clickcritcheck = 1;
     totalcrits += 1;
     $("#crits").html("Total Crit Clicks: " + totalcrits);
   }
-  if (Math.random() < (1 - buildcrit)) {
+  if (Math.random() < (1 - levelperks[4])) {
     randombuildget = 0 | Math.random * amounts.length;
     amounts[randombuildget] += 1;
   }
-  money = round(money + (incamount * (clickcritcheck === 1 ? clickcrit : 1)), 3);
-  totalearned = round(totalearned + (incamount * (clickcritcheck === 1 ? clickcrit : 1)), 3);
+  money = round(money + (incamount * (clickcritcheck === 1 ? levelperks[2] : 1)), 3);
+  totalearned = round(totalearned + (incamount * (clickcritcheck === 1 ? levelperks[2] : 1)), 3);
   totalclicks += 1;
-  clickxp[0] += 1;
-  if (clickxp[0] >= clickxp[1]) {
-    clicklevel += 1;
-    if (clicklevel % 5 === 0) {
+  clicklvinfo[1] += 1;
+  if (clicklvinfo[1] >= clicklvinfo[2]) {
+    clicklvinfo[0] += 1;
+    if (clicklvinfo[0] % 5 === 0) {
       levelUp("click");
     }
-    incamount = round(incamount * (1.5 + round(clicklevelmult / 10, 1)), 3);
-    clickxp[0] = round(clickxp[0] - clickxp[1], 3);
-    clickxp[1] = round(clickxp[1] * 1.1, 3);
-    $("#clicklevel").html("Clicking: Level " + clicklevel);
+    incamount = round(incamount * (1.5 + round(levelperks[0] / 10, 1)), 3);
+    clicklvinfo[1] = round(clicklvinfo[1] - clicklvinfo[2], 3);
+    clicklvinfo[2] = round(clicklvinfo[2] * 1.1, 3);
+    $("#clicklvinfo[0]").html("Clicking: Level " + clicklvinfo[0]);
     $("#clickearns").html("Click earns: $" + incamount);
   }
-  $("#clickbar").width(round(clickxp[0] / clickxp[1] * 100, 1) + "%");
-  $("#clickxpamount").html(round(clickxp[0] / clickxp[1] * 100, 1) + "%");
+  $("#clickbar").width(round(clicklvinfo[1] / clicklvinfo[2] * 100, 1) + "%");
+  $("#clickxpamount").html(round(clicklvinfo[1] / clicklvinfo[2] * 100, 1) + "%");
   $("#money").html("Balance: $" + convertCosts(money));
   $("#earned").html("Total Money Earned: $" + convertCosts(totalearned));
   $("#clicks").html("Total Clicks: " + totalclicks);
@@ -211,38 +223,38 @@ toggleDisplay = function(id) {
 };
 
 idleInc = function() {
-  var b, i, ref;
+  var b, j, ref1;
   money = round(money + (mps / 100), 3);
   totalearned = round(totalearned + (mps / 100), 3);
-  idlexp[0] = round(idlexp[0] + (mps / 100), 3);
-  if (idlexp[0] >= idlexp[1]) {
-    idlelevel += 1;
-    if (idlelevel % 5 === 0) {
+  idlelvinfo[1] = round(idlelvinfo[1] + (mps / 100), 3);
+  if (idlelvinfo[1] >= idlelvinfo[2]) {
+    idlelvinfo[0] += 1;
+    if (idlelvinfo[0] % 5 === 0) {
       levelUp("idle");
     }
-    for (b = i = 0, ref = mpsadds.length; 0 <= ref ? i <= ref : i >= ref; b = 0 <= ref ? ++i : --i) {
-      mpsadds[b] = round(mpsadds[b] * (1.1 + idlelevelmult), 3);
+    for (b = j = 0, ref1 = mpsadds.length; 0 <= ref1 ? j <= ref1 : j >= ref1; b = 0 <= ref1 ? ++j : --j) {
+      mpsadds[b] = round(mpsadds[b] * (1.1 + levelperks[1]), 3);
     }
     mps = round(mps * 1.1, 3);
-    idlexp[0] = round(idlexp[0] - idlexp[1], 3);
-    idlexp[1] = round(idlexp[1] * 1.5, 3);
-    $("#idlelevel").html("Idling: Level " + idlelevel);
+    idlelvinfo[1] = round(idlelvinfo[1] - idlelvinfo[2], 3);
+    idlelvinfo[2] = round(idlelvinfo[2] * 2, 3);
+    $("#idlelvinfo[0]").html("Idling: Level " + idlelvinfo[0]);
   }
-  $("#idlebar").width(round(idlexp[0] / idlexp[1] * 100, 1) + "%");
-  $("#idlexpamount").html(round(idlexp[0] / idlexp[1] * 100, 1) + "%");
+  $("#idlebar").width(round(idlelvinfo[1] / idlelvinfo[2] * 100, 1) + "%");
+  $("#idlexpamount").html(round(idlelvinfo[1] / idlelvinfo[2] * 100, 1) + "%");
   $("#money").html("Balance: $" + convertCosts(money));
   $("#earned").html("Total Money Earned: $" + convertCosts(totalearned));
   window.setTimeout(idleInc, 10);
 };
 
 buildingFunc = function(n) {
-  var c, i, ref;
+  var c, j, ref1;
   if (money >= costs[n]) {
     money -= costs[n];
     totalspent[n] = round(totalspent[n] + costs[n], 3);
     costs[n] = round(costs[n] * (Math.pow(1.15, multiplier)), 3);
     if (multiplier !== 1) {
-      for (c = i = 1, ref = multiplier; 1 <= ref ? i <= ref : i >= ref; c = 1 <= ref ? ++i : --i) {
+      for (c = j = 1, ref1 = multiplier; 1 <= ref1 ? j <= ref1 : j >= ref1; c = 1 <= ref1 ? ++j : --j) {
         costs[n] = round(costs[n] + Math.pow(1.15, origcosts[n] + c), 3);
       }
     }
@@ -282,10 +294,12 @@ clickUpg = function(n) {
     clickupgs[n] += 1;
     incamount *= clickeffects[n];
     $("#clickupg" + (n + 1)).hide();
-  }
-  if (!(indexOf.call(clickupgs, 0) >= 0)) {
-    $("#clickupglist").css("height", 0);
-    return window.alert("You do not have enough money.");
+    if (!(indexOf.call(clickupgs, 0) >= 0)) {
+      $("#clickupglist").css("height", 0);
+    }
+    return $("#clickearns").html("Click earns: $" + incamount);
+  } else {
+    window.alert("You do not have enough money.");
   }
 };
 
@@ -307,10 +321,10 @@ displayUpgs = function(n) {
 };
 
 multiplierChange = function() {
-  var d, e, f, g, i, j, k, l, multipliercolours, multiplierlist, ref, ref1, ref2, ref3, results;
+  var d, e, f, g, j, k, l, m, multipliercolours, multiplierlist, ref1, ref2, ref3, ref4, results;
   multiplierlist = [1, 10, 100];
   multipliercolours = ["orange", "yellow", "chartreuse"];
-  for (d = i = 0, ref = costs.length - 1; 0 <= ref ? i <= ref : i >= ref; d = 0 <= ref ? ++i : --i) {
+  for (d = j = 0, ref1 = costs.length - 1; 0 <= ref1 ? j <= ref1 : j >= ref1; d = 0 <= ref1 ? ++j : --j) {
     costs[d] = round(origcosts[d] * (Math.pow(1.15, amounts[d])), 3);
   }
   if (multiplier === 100) {
@@ -321,15 +335,25 @@ multiplierChange = function() {
     multiplier = multiplierlist[multiplierlist.indexOf(multiplier) + 1];
     $("#multiplier").html("x" + multiplier);
     $("#multiplier").css("background-color", multipliercolours[multiplierlist.indexOf(multiplier)]);
-    for (e = j = 1, ref1 = multiplier - 1; 1 <= ref1 ? j <= ref1 : j >= ref1; e = 1 <= ref1 ? ++j : --j) {
-      for (f = k = 0, ref2 = costs.length - 1; 0 <= ref2 ? k <= ref2 : k >= ref2; f = 0 <= ref2 ? ++k : --k) {
+    for (e = k = 1, ref2 = multiplier - 1; 1 <= ref2 ? k <= ref2 : k >= ref2; e = 1 <= ref2 ? ++k : --k) {
+      for (f = l = 0, ref3 = costs.length - 1; 0 <= ref3 ? l <= ref3 : l >= ref3; f = 0 <= ref3 ? ++l : --l) {
         costs[f] = round(costs[f] + origcosts[f] * (Math.pow(1.15, amounts[f] + e)), 3);
       }
     }
   }
   results = [];
-  for (g = l = 0, ref3 = buildings.length - 1; 0 <= ref3 ? l <= ref3 : l >= ref3; g = 0 <= ref3 ? ++l : --l) {
+  for (g = m = 0, ref4 = buildings.length - 1; 0 <= ref4 ? m <= ref4 : m >= ref4; g = 0 <= ref4 ? ++m : --m) {
     results.push($("#" + buildings[g] + "build").html(buildnames[g] + "<br>($" + convertCosts(costs[g]) + ")"));
   }
   return results;
 };
+
+var currentzone, mobdata, mobs, zonenames;
+
+mobs = [[["Spider", "slow"], ["Lizard", "none"], ["Ent", "poison"], ["Tree Spider", "slow/poison"]], [["Archaeologist", "none"], ["Lumberjack", "bleed"], ["Imp", "bleed"], ["Treasure Chest", "none"]], [["Wolf", "bleed"], ["Dryad", "poison"], ["Shaman", "undead"], ["Potion Master", "slow/poison/bleed"]]];
+
+mobdata = [[1, 5, 1, 3, 2], [10, 35, 4, 10, 8], [50, 180, 15, 30, 20]];
+
+zonenames = [["Money Forest", 3]];
+
+currentzone = 0;
